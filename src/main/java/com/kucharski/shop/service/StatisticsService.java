@@ -1,0 +1,54 @@
+package com.kucharski.shop.service;
+
+
+import com.kucharski.shop.data.ExpenseDataQuery;
+import com.kucharski.shop.statistics.GeneralStatistics;
+import com.kucharski.shop.statistics.UserExpensesStatistics;
+import com.kucharski.shop.statistics.UserOrdersStatistics;
+import com.kucharski.shop.repository.ExpenseRepository;
+import com.kucharski.shop.repository.ItemRepository;
+import com.kucharski.shop.repository.OrderRepository;
+import com.kucharski.shop.repository.UserRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
+
+
+@Service
+public class StatisticsService {
+    DataBaseService dataBaseService;
+    OrderRepository orderRepository;
+    ExpenseRepository expenseRepository;
+    ItemRepository itemRepository;
+    UserRepository userRepository;
+    public StatisticsService(DataBaseService dataBaseService, OrderRepository orderRepository, ExpenseRepository expenseRepository,
+                             ItemRepository itemRepository,UserRepository userRepository ){
+        this.dataBaseService = dataBaseService;
+        this.orderRepository = orderRepository;
+        this.expenseRepository = expenseRepository;
+        this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
+    }
+
+    @Transactional
+    public GeneralStatistics getGeneralStatistics(){
+        ExpenseDataQuery expenseDataQuery = expenseRepository.getExpenseDataQuery();
+        GeneralStatistics generalStatistics = orderRepository.getGeneralStatistics();
+        generalStatistics.setHowManyUsers(userRepository.count());
+        generalStatistics.setHowManyItems(itemRepository.count());
+        generalStatistics.setTotalExpenseValue(expenseDataQuery.getTotalExpensesValue());
+        generalStatistics.setHowManyExpenses(expenseDataQuery.getHowManyExpenses());
+        return generalStatistics;
+    }
+    @Transactional
+    public List<UserOrdersStatistics> getUserOrdersStatistics(){
+        return orderRepository.getUserOrdersStatistics();
+    }
+
+    @Transactional
+    public List<UserExpensesStatistics> getUserExpensesStatistics(){
+        return expenseRepository.getUserExpensesStatistics();
+    }
+}
+

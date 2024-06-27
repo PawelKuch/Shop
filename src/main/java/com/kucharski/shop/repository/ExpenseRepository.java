@@ -1,0 +1,30 @@
+package com.kucharski.shop.repository;
+
+
+import com.kucharski.shop.data.ExpenseDataQuery;
+import com.kucharski.shop.entity.Expense;
+import com.kucharski.shop.entity.User;
+import com.kucharski.shop.statistics.UserExpensesStatistics;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+    @Query("SELECT SUM(e.totalExpenseValue) FROM Expense e WHERE e.user =?1")
+    Optional<Double> getTotalPurchaseValueOfUser(User user);
+    @Query("SELECT SUM(e.totalExpenseValue) FROM Expense e")
+    Optional<Double> getTotalPurchaseValue();
+
+    @Query("SELECT new com.kucharski.shop.statistics.UserExpensesStatistics(e.user.userId, e.user.name, SUM(e.totalExpenseValue), COUNT(e)) " +
+            "FROM Expense e " +
+            "JOIN User u ON e.user = u " +
+            "GROUP BY u")
+    List<UserExpensesStatistics> getUserExpensesStatistics();
+
+    @Query("SELECT new com.kucharski.shop.data.ExpenseDataQuery(SUM(e.totalExpenseValue), COUNT(e.expenseId)) " +
+            "FROM Expense e")
+    ExpenseDataQuery getExpenseDataQuery();
+}
+
